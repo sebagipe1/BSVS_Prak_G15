@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/BSVS_Prak_G15.dir/main.c.o CMakeFiles/BSVS_Prak_G15.dir/sub.c.o CMakeFiles/BSVS_Prak_G15.dir/keyValue.c.o  -o BSVS_Prak_G15 

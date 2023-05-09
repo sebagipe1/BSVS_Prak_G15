@@ -1,0 +1,4 @@
+/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /tmp/PrakBS21/tmp/BSVS_Prak_G15
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /tmp/PrakBS21/tmp/BSVS_Prak_G15/cmake-build-docker
