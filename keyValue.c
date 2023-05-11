@@ -3,18 +3,28 @@
 //
 
 #include "keyValue.h"
+#include <stdio.h>
 #include <string.h>
-
+char buffer[out_size]; // Buffer for formatting output with sprintf()
 char data[key_amount][value_lenght];
+void initialize_array(){
+    for(int i = 0; i<key_amount;i++)
+    {
+        strcpy(data[i], "");
+    }
+   strcpy(data[0], "Tom");
 
-int get(int key, char *out) {
-    if (data[key] != NULL) {
-        out = "GET:KEY1:", data[key];
+}
+
+int get(int key, char *out[out_size]) {
+    if (strcmp(data[key-1], "") != 0) {
+        sprintf(buffer, "GET:key%d:",key);
+        strcpy(*out, strcat(strcat(buffer, data[key-1]),"\n"));
         return 1;
     }
     else
     {
-        out = "GET:KEY1:key_nonexistent";
+        strcpy(*out, "GET:key_nonexistent\n");
         return 0;
     }
 

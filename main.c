@@ -18,6 +18,8 @@ int main() {
     int rfd; // Rendevouz-Descriptor
     int cfd; // Verbindungs-Descriptor
 
+    initialize_array(); // Daten array mit "" füllen
+
     struct sockaddr_in client; // Socketadresse eines Clients
     socklen_t client_len; // Länge der Client-Daten
     char in[BUFSIZE]; // Daten vom Client an den Server
@@ -55,22 +57,22 @@ int main() {
         fprintf(stderr, "socket konnte nicht listen gesetzt werden\n");
         exit(-1);
     }
-    int out_size = 7 + key_amount + value_lenght;
     char out[out_size];
-
     while(1){
         // Verbindung eines Clients wird entgegengenommen
         cfd = accept(rfd, (struct sockaddr *) &client, &client_len);
+
         // Lesen von Daten, die der Client schickt
         bytes_read = read(cfd, in, BUFSIZE);
 
         // Zurückschicken der Daten, solange der Client welche schickt (und kein Fehler passiert)
         while (bytes_read > 0) {
+
             // Splitten & Interpretierung von Input des Clients
             proccess_client_input(in, &out);
 
 
-            write(cfd, out, out_size);
+            write(cfd, out, strlen(out));
             bytes_read = read(cfd, in, BUFSIZE);
 
         }

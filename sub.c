@@ -3,7 +3,6 @@
 //
 
 #include "sub.h"
-#include "keyValue.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,20 +10,29 @@
 
 #define delim " "
 
-void proccess_client_input(char in[], char* out) {
+int proccess_client_input(char in[], char *out[out_size]) {
     // Splitten & Interpretierung von Input des Clients
     int key;
-    char*ptr; // Char pointer. (For splitting the Client input)
+    char *ptr; // Char pointer. (For splitting the Client input)
     ptr = strtok(in, delim);
-    if(ptr == "GET"){
-        ptr = strtok(NULL, delim);
+    ptr = strtok(NULL, delim);
+    if (ptr != NULL && strcmp(ptr, "0") != 0) {
         key = atoi(ptr);
-        get(key, &out);
-        out = "GET:KEY1:key_nonexistent";
-
+        if (key > 0 && key <= key_amount) {
+            if (strcmp(in, "GET") == 0) {
+                get(key, &out);
+                return 1;
+            } else if (strcmp(in, "PUT") == 0) {
+                return 1;
+            } else if (strcmp(in, "DEL") == 0) {
+                return 1;
+            }
+            else
+                strcpy(out, "Command Unknown\n");return 0;
+        }
+        else
+            strcpy(out, "Key Out of Bounds\n");return 0;
     }
-    else if (ptr == "PUT"){
-
-    }
-    else if(ptr == "DEL"){}
+    strcpy(out, "Input not Valid\n");
+    return 0;
 }
