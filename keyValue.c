@@ -12,8 +12,6 @@ void initialize_array(){
     {
         strcpy(data[i], "");
     }
-   strcpy(data[0], "Tom");
-
 }
 
 int get(int key, char *out[out_size]) {
@@ -24,8 +22,20 @@ int get(int key, char *out[out_size]) {
     }
     else
     {
-        strcpy(*out, "GET:key_nonexistent\n");
+        strcpy(*out, "GET:key_empty\n");
         return 0;
     }
+}
+int put(int key,char value[value_lenght], char *out[out_size]){
+    strcpy(data[key-1], value);
+    sprintf(buffer, "PUT:key%d:",key);
+    strcpy(*out, strcat(strcat(buffer, data[key-1]),"\n"));
+    return 1;
+}
+int del(int key, char *out[out_size]){
+    strcpy(data[key-1], "");
+    sprintf(buffer, "DEL:key%d:",key);
+    strcpy(*out, strcat(strcat(buffer, "key_cleared"),"\n"));
+    return 1;
 
 }

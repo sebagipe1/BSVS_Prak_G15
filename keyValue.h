@@ -8,7 +8,7 @@
 #define key_amount 10 //Amount keys (indexes) in the Data array
 #define out_size 7 + key_amount + value_lenght // Size of Output. Dependent on value length and key amount
 int get(int key, char *out[out_size]);
-int put(char* key, char* res);
-int del(char* key);
+int put(int key,char value[value_lenght], char *out[out_size]);
+int del(int key, char *out[out_size]);
 void initialize_array();
 #endif //BSVS_PRAK_G15_KEYVALUE_H

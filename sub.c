@@ -23,8 +23,22 @@ int proccess_client_input(char in[], char *out[out_size]) {
                 get(key, &out);
                 return 1;
             } else if (strcmp(in, "PUT") == 0) {
-                return 1;
+                ptr = strtok(NULL,delim);
+                char v[value_lenght];
+                strcpy(v,ptr);
+                printf(v);
+                if(ptr != NULL){
+                    if(strlen(ptr) <= value_lenght){
+                        put(key, v, &out);return 1;
+                    }
+                    else
+                        strcpy(out, "Value too big to be stored");return 0;
+
+                }
+                else
+                    strcpy(out, "PUT command missing value argument\n");
             } else if (strcmp(in, "DEL") == 0) {
+                del(key, &out);
                 return 1;
             }
             else
