@@ -3,9 +3,8 @@
 //
 
 #include "sub.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "keyValue.h"
+
 
 
 #define delim " "
@@ -49,4 +48,30 @@ int proccess_client_input(char in[], char *out[out_size]) {
     }
     strcpy(out, "Input not Valid\n");
     return 0;
+}
+
+void client_connection(){
+    int PID = fork();
+    // Verbindung eines Clients wird entgegengenommen
+    cfd = accept(rfd, (struct sockaddr *) &client, &client_len);
+
+    // Lesen von Daten, die der Client schickt
+    bytes_read = read(cfd, in, BUFSIZE);
+    if(strcmp(in, "quit") == 0)
+    {
+        close(cfd);
+    }
+    else {
+        // Zurückschicken der Daten, solange der Client welche schickt (und kein Fehler passiert)
+        while (bytes_read > 0) {
+
+            // Splitten & Interpretierung von Input des Clients
+            proccess_client_input(in, &out);
+
+
+            write(cfd, out, strlen(out));
+            bytes_read = read(cfd, in, BUFSIZE);
+
+        }
+    }
 }

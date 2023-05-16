@@ -3,8 +3,6 @@
 //
 
 #include "keyValue.h"
-#include <stdio.h>
-#include <string.h>
 char buffer[out_size]; // Buffer for formatting output with sprintf()
 char data[key_amount][value_lenght];
 void initialize_array(){

@@ -6,4 +6,5 @@
 #define BSVS_PRAK_G15_SUB_H
 #include "keyValue.h"
 int proccess_client_input(char in[], char *out[out_size]);
+void client_connection();
 #endif //BSVS_PRAK_G15_SUB_H
