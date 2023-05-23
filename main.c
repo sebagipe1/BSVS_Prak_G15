@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 #include "main.h"
 #include "keyValue.h"
@@ -15,6 +16,8 @@
 #define PORT 4711
 
 int main() {
+    char buffer[1024];
+
     int rfd; // Rendevouz-Descriptor
     int cfd; // Verbindungs-Descriptor
 
@@ -25,6 +28,7 @@ int main() {
     char in[BUFSIZE]; // Daten vom Client an den Server
     int bytes_read; // Anzahl der Bytes, die der Client geschickt hat
 
+    pid_t childpid; // Child Process-ID (gebraucht für mehrere Clients)
 
     // Socket erstellen
     rfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -57,24 +61,51 @@ int main() {
         fprintf(stderr, "socket konnte nicht listen gesetzt werden\n");
         exit(-1);
     }
+
+
     char out[out_size];
+
+    int cnt = 0;
     while(1){
         // Verbindung eines Clients wird entgegengenommen
         cfd = accept(rfd, (struct sockaddr *) &client, &client_len);
+        if (cfd < 0)
+            exit(1);
 
-        // Lesen von Daten, die der Client schickt
-        bytes_read = read(cfd, in, BUFSIZE);
+        // Displaying information of connected client
+        printf("Connection accepted from %s:%d\n",
+               inet_ntoa(client.sin_addr),
+               ntohs(client.sin_port));
 
-        // Zurückschicken der Daten, solange der Client welche schickt (und kein Fehler passiert)
-        while (bytes_read > 0) {
+        // Print number of clients connected till now
+        printf("Clients connected: %d\n\n", ++cnt);
 
-            // Splitten & Interpretierung von Input des Clients
-            proccess_client_input(in, &out);
+        // Creates a child process
+        if (childpid = fork() == 0){ // FÜR MEHRERE CLIENTS VERANTWORTLICH !!!!!!!!!!
+            // Closing the server socket id
+            close(rfd);
 
 
-            write(cfd, out, strlen(out));
-            bytes_read = read(cfd, in, BUFSIZE);
+            // Send a confirmation message to the client
+            send(cfd, "hi client\n",
+                 strlen("hi client\n"), 0);
 
+            while(1){
+                // Lesen von Daten, die der Client schickt
+                bytes_read = read(cfd, in, BUFSIZE);
+
+                // Zurückschicken der Daten, solange der Client welche schickt (und kein Fehler passiert)
+                while (bytes_read > 0) {
+
+                    // Splitten & Interpretierung von Input des Clients
+                    proccess_client_input(in, &out);
+
+
+                    write(cfd, out, strlen(out));
+                    bytes_read = read(cfd, in, BUFSIZE);
+
+                }
+            }
         }
         close(cfd);
     }
