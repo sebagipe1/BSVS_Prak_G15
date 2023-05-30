@@ -10,5 +10,7 @@
 int get(int key, char *out[out_size]);
 int put(int key,char value[value_lenght], char *out[out_size]);
 int del(int key, char *out[out_size]);
+char (*data)[key_amount][value_lenght];
+char d_size[key_amount][value_lenght];
 void initialize_array();
 #endif //BSVS_PRAK_G15_KEYVALUE_H

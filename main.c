@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,6 +6,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
 
 #include "main.h"
 #include "keyValue.h"
@@ -14,6 +15,7 @@
 
 #define BUFSIZE 1024 // Größe des Buffers
 #define PORT 4711
+#define SEGSIZE sizeof(d_size)
 
 int main() {
     char buffer[1024];
@@ -21,8 +23,10 @@ int main() {
     int rfd; // Rendevouz-Descriptor
     int cfd; // Verbindungs-Descriptor
 
-    initialize_array(); // Daten array mit "" füllen
+    int  id = shmget(IPC_PRIVATE, SEGSIZE, IPC_CREAT|0777);
+    data = (char*)shmat(id, 0, 0);
 
+    initialize_array(); // Daten array mit "" füllen
     struct sockaddr_in client; // Socketadresse eines Clients
     socklen_t client_len; // Länge der Client-Daten
     char in[BUFSIZE]; // Daten vom Client an den Server
@@ -54,14 +58,12 @@ int main() {
         exit(-1);
     }
 
-
     // Socket lauschen lassen
     int lrt = listen(rfd, 5);
     if (lrt < 0 ){
         fprintf(stderr, "socket konnte nicht listen gesetzt werden\n");
         exit(-1);
     }
-
 
     char out[out_size];
 
@@ -109,7 +111,8 @@ int main() {
         }
         close(cfd);
     }
-
+    shmdt(data);
+    shmctl(id, IPC_RMID, 0);
     // Rendevouz Descriptor schließen
     close(rfd);
 }
