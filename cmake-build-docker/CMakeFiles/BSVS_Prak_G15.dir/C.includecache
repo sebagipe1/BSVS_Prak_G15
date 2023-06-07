@@ -9,6 +9,8 @@
 /tmp/PrakBS21/tmp/BSVS_Prak_G15/keyValue.c
 keyValue.h
 /tmp/PrakBS21/tmp/BSVS_Prak_G15/keyValue.h
+stdio.h
+-
 string.h
 -
 
@@ -29,6 +31,12 @@ netinet/in.h
 -
 string.h
 -
+arpa/inet.h
+-
+sys/shm.h
+-
+sys/wait.h
+-
 main.h
 /tmp/PrakBS21/tmp/BSVS_Prak_G15/main.h
 keyValue.h
@@ -41,14 +49,28 @@ sub.h
 /tmp/PrakBS21/tmp/BSVS_Prak_G15/sub.c
 sub.h
 /tmp/PrakBS21/tmp/BSVS_Prak_G15/sub.h
-keyValue.h
-/tmp/PrakBS21/tmp/BSVS_Prak_G15/keyValue.h
 stdio.h
--
-string.h
 -
 stdlib.h
 -
+unistd.h
+-
+sys/types.h
+-
+sys/socket.h
+-
+netinet/in.h
+-
+string.h
+-
+arpa/inet.h
+-
+sys/shm.h
+-
+sys/wait.h
+-
 
 /tmp/PrakBS21/tmp/BSVS_Prak_G15/sub.h
+keyValue.h
+/tmp/PrakBS21/tmp/BSVS_Prak_G15/keyValue.h
 

@@ -4,19 +4,21 @@
 
 #include "sub.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
 
-
-#define delim " "
-
-int proccess_client_input(char in[], char *out[out_size]) {
+int proccess_client_input(char *ptr, char *out[out_size], char* in) {
     // Splitten & Interpretierung von Input des Clients
     int key;
-    char *ptr; // Char pointer. (For splitting the Client input)
-    ptr = strtok(in, delim);
     ptr = strtok(NULL, delim);
-    if (ptr != NULL && strcmp(ptr, "0") != 0) {
+    if (ptr != NULL) {
         key = atoi(ptr);
         if (key > 0 && key <= key_amount) {
             if (strcmp(in, "GET") == 0) {
@@ -33,7 +35,6 @@ int proccess_client_input(char in[], char *out[out_size]) {
                     }
                     else
                         strcpy(out, "Value too big to be stored");return 0;
-
                 }
                 else
                     strcpy(out, "PUT command missing value argument\n");

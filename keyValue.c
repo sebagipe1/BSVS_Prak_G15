@@ -38,5 +38,4 @@ int del(int key, char *out[out_size]){
     sprintf(buffer, "DEL:key%d:",key);
     strcpy(*out, strcat(strcat(buffer, "key_cleared"),"\n"));
     return 1;
-
 }

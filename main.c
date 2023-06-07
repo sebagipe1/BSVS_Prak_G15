@@ -7,24 +7,28 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/shm.h>
+#include <sys/sem.h>
 #include <sys/wait.h>
 
 #include "main.h"
 #include "keyValue.h"
 #include "sub.h"
 
-#define BUFSIZE 1024 // Größe des Buffers
 #define PORT 4711
 #define SEGSIZE sizeof(d_size)
 
 int main() {
     char buffer[1024];
+    int close_switch = 0; // Um Kindsprozesse Beenden zu können
 
     int rfd; // Rendevouz-Descriptor
-    int cfd; // Verbindungs-Descriptor
+//    int cfd; // Verbindungs-Descriptor
 
-    int  id = shmget(IPC_PRIVATE, SEGSIZE, IPC_CREAT|0777);
-    data = (char*)shmat(id, 0, 0);
+    int  id1 = shmget(IPC_PRIVATE, SEGSIZE, IPC_CREAT|0777);
+    data = (char*)shmat(id1, 0, 0);
+    int  id2 = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT|0777);
+    int *beg_switch = shmat(id2,0,0); // Switch für die Blockierung der andere Kindsprozesse wenn Beg aufgerufen wird
+    int  exclusive_switch = 0; // Switch um Client zu identifizieren der BEG aufgerufen hat
 
     initialize_array(); // Daten array mit "" füllen
     struct sockaddr_in client; // Socketadresse eines Clients
@@ -65,10 +69,27 @@ int main() {
         exit(-1);
     }
 
+    // Semaphor Gruppe anlegen
+    int sem_id = semget (IPC_PRIVATE, 1, IPC_CREAT|0644);
+    if (sem_id == -1) {
+        perror ("Die Gruppe konnte nicht angelegt werden!");
+        exit(1);
+    }
+    // Initilisierung der Semaphor. Semaphor wird  auf 1 gesetzt.
+    unsigned short marker[1];
+    marker[0] = 1;
+    semctl(sem_id, 1, SETALL, marker);  // alle Semaphore auf 1
+    // Structs für die Befehle für Eingang und Verlassen der kritische Zone
+    struct sembuf enter, leave; // Structs für den Semaphor
+    enter.sem_num = leave.sem_num = 0;  // Semaphor 0 in der Gruppe
+    enter.sem_flg = leave.sem_flg = SEM_UNDO;
+    enter.sem_op = -1; // blockieren, DOWN-Operation
+    leave.sem_op = 1; // wider freigeben. Up Operation
+
     char out[out_size];
 
     int cnt = 0;
-    while(1){
+    while(close_switch == 0){
         // Verbindung eines Clients wird entgegengenommen
         cfd = accept(rfd, (struct sockaddr *) &client, &client_len);
         if (cfd < 0)
@@ -81,38 +102,56 @@ int main() {
 
         // Print number of clients connected till now
         printf("Clients connected: %d\n\n", ++cnt);
-
+        char *ptr;
         // Creates a child process
         if (childpid = fork() == 0){ // FÜR MEHRERE CLIENTS VERANTWORTLICH !!!!!!!!!!
             // Closing the server socket id
             close(rfd);
 
-
             // Send a confirmation message to the client
-            send(cfd, "hi client\n",
-                 strlen("hi client\n"), 0);
+            send(cfd, "hi client\n",strlen("hi client\n"), 0);
 
-            while(1){
-                // Lesen von Daten, die der Client schickt
-                bytes_read = read(cfd, in, BUFSIZE);
-
-                // Zurückschicken der Daten, solange der Client welche schickt (und kein Fehler passiert)
-                while (bytes_read > 0) {
-
-                    // Splitten & Interpretierung von Input des Clients
-                    proccess_client_input(in, &out);
+            // Lesen von Daten, die der Client schickt
+            bytes_read = read(cfd, in, BUFSIZE);
+            while (close_switch == 0) {
+                while(*beg_switch == 1 && exclusive_switch == 0){
+                    write(cfd, "Key/Value-Store blocked by exclusive session\n",45);
+                    bytes_read = read(cfd, in, BUFSIZE);
+                }
 
 
+                ptr = strtok(in, delim);
+                if(strcmp(ptr, "QUIT") == 0)
+                {
+                    close_switch = 1;
+                }
+                else if(strcmp(ptr, "BEG") == 0)
+                {
+                    semop(sem_id,&enter,1); // Down Operation, Eingang in kritischen Bereich
+                    write(cfd, "Exclusive session started\n", 27);
+                    *beg_switch = 1;
+                    exclusive_switch = 1;
+                }
+                else if(strcmp(ptr, "END") == 0){
+                    *beg_switch = 0;
+                    exclusive_switch = 0;
+                    write(cfd, "Exclusive session ended\n", 25);
+                    semop(sem_id,&leave,1);
+                }
+                else {
+                    proccess_client_input(&ptr, &out, in);
                     write(cfd, out, strlen(out));
+                }
+
+                if(close_switch == 0)
                     bytes_read = read(cfd, in, BUFSIZE);
 
-                }
             }
         }
-        close(cfd);
     }
+        close(cfd);
     shmdt(data);
-    shmctl(id, IPC_RMID, 0);
+    shmctl(id1, IPC_RMID, 0);
     // Rendevouz Descriptor schließen
     close(rfd);
 }
